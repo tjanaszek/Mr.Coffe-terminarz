@@ -1,56 +1,48 @@
 const express = require('express');
 const { users, schedules } = require('./data');
+
 const app = express();
-app.use(express.json())
+app.use(express.json());
 
-app.get('/', function(req, res){
-    res.send('Welcome to our schedule website')
-  })
+app.get('/', (req, res) => {
+  res.send('Welcome to our schedule website');
+});
 
+app.get('/users', (req, res) => {
+  res.send(users);
+});
 
-  app.get('/users', function(req, res){
-    res.send(users)
-  })
+app.get('/users/:userId', (req, res) => {
+  const { userId } = req.params;
+  const user = users[userId];
+  res.send(user);
+});
 
-
-  app.get('/users/:userId', function(req, res){
-    const userId = req.params.userId;
-    const user = users[userId];
-    res.send(user)
-  })
-
-
-  app.get('/users/:userId/schedules', function(req, res){
-    const userId = req.params.userId;
-    const userSchedules=[]
-    for(let i of schedules){
-        if(userId==i['user_id']){
-            userSchedules.push(i)
-        }
+app.get('/users/:userId/schedules', (req, res) => {
+  const { userId } = req.params;
+  const userSchedules = [];
+  for (let i of schedules) {
+    if (userId == i.user_id) {
+      userSchedules.push(i);
     }
-    res.send(userSchedules)
-  })
+  }
+  res.send(userSchedules);
+});
 
+app.get('/schedules', (req, res) => {
+  res.send(schedules);
+});
 
-  app.get('/schedules', function(req, res){
-    res.send(schedules)
-  })
+app.post('/schedules', (req, res) => {
+  const u = req.body;
+  schedules.push(u);
+  res.send(u);
+});
 
+app.post('/users', (req, res) => {
+  const u = req.body;
+  users.push(u);
+  res.send(u);
+});
 
-  app.post('/schedules', function(req, res){
-    const u = req.body
-    schedules.push(u)
-    res.send(u)
-  })
-
-  app.post('/users', function(req, res){
-    const u = req.body
-    users.push(u)
-    res.send(u)
-  })
-
-
-  app.listen(3000)
-
-
-  
+app.listen(3000);
