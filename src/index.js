@@ -1,5 +1,6 @@
 const express = require('express');
 const { users, schedules } = require('./data');
+const crypto = require('crypto')
 
 const app = express();
 app.use(express.json());
@@ -33,6 +34,7 @@ app.get('/schedules', (req, res) => {
   res.send(schedules);
 });
 
+
 app.post('/schedules', (req, res) => {
   const u = req.body;
   schedules.push(u);
@@ -41,8 +43,9 @@ app.post('/schedules', (req, res) => {
 
 app.post('/users', (req, res) => {
   const u = req.body;
+  u['password']=crypto.createHash("sha256").update(u['password']).digest("hex");
   users.push(u);
-  res.send(u);
+  res.send(u)
 });
 
 app.listen(3000);
