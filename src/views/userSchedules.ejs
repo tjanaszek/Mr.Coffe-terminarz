@@ -1,0 +1,15 @@
+
+<h3>user ID: <%=userSchedules[0].user_id%> </h3>
+<ul>
+    <% for(let i=0;i<userSchedules.length;i++){ %>
+      <li>
+          <!-- <a href="http://localhost:5000/articles/<%=i%>"> -->
+              day: <%=userSchedules[i].day%>, start at <%=userSchedules[i].start_at%>, end at <%=userSchedules[i].end_at%> 
+          <!-- </a> -->
+      </li>
+    <% } %>
+  </ul>
+
+  <a href="/users/<%=userSchedules[0].user_id%>">Go back</a>
+  <a href="/">Homepage</a>
+

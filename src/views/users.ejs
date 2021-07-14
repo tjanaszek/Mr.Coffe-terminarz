@@ -1,0 +1,10 @@
+<ul>
+    <% for(let i=0;i<users.length;i++){ %>
+      <li>
+          <a href="/users/<%=i%>">
+              <%=users[i].firstname%> <%=users[i].lastname%>
+          </a>
+      </li>
+    <% } %>
+  </ul>
+  <a href="/">Homepage</a>
