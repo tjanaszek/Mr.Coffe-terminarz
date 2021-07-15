@@ -4,12 +4,17 @@ const crypto = require('crypto');
 const path = require('path')
 const { users, schedules } = require('./data');
 const app = express();
+let bodyParser = require('body-parser')
+let urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts)
 app.set('view engine', 'ejs');
 app.use(express.static('public/css'));
 app.use(express.json());
+
+
+app.use(require('body-parser').urlencoded({ extended: true })); //sprawdź czy to działa z curl -> działa
 
 app.use ((req, res, next) => {
     res.locals.url = req.originalUrl;
@@ -23,14 +28,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/users', (req, res) => {
-  // res.send(users);
   res.render('users', {title: 'Users', users: users})
-});
-
-app.get('/users/:userId', (req, res) => {
-  const { userId } = req.params;
-  const user = users[userId];
-  res.render('user', {title: 'User', user})
 });
 
 app.get('/users/:userId/schedules', (req, res) => {
@@ -41,25 +39,44 @@ app.get('/users/:userId/schedules', (req, res) => {
       userSchedules.push(i);
     }
   }
-  res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
+  if(userSchedules.length!=0){
+    console.log(userSchedules.length)
+    res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
+  }
+  else{
+    res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
+  }
 });
 
 app.get('/schedules', (req, res) => {
   res.render('schedules', {title: 'Schedules', schedules: schedules})
 });
 
-app.post('/schedules', (req, res) => {
-  const u = req.body;
-  schedules.push(u);
-  res.send(u);
+app.get('/schedules/new', (req, res) => {
+  res.render('newSchedule', {title: 'Add new schedule'})
 });
 
-app.use(require('body-parser').urlencoded({ extended: false })); //sprawdź czy to działa z curl -> działa
-app.post('/users', (req, res) => {
+app.post('/schedules/new', (req, res) => {
+  const u = req.body;
+  schedules.push(u);
+  res.render('schedules', {title: 'Schedules', schedules: schedules})
+});
+
+app.get('/users/new', (req, res) => {
+  res.render('newUser', {title: 'Add new user', users: users})
+});
+
+app.post('/users/new', urlencodedParser, (req, res) => {
   const u = req.body;
   u.password = crypto.createHash('sha256').update(u.password).digest('hex');
   users.push(u);
-  res.send(u);
+  res.render('users', {title: 'Users', users: users})
+});
+
+app.get('/users/:userId', (req, res) => {
+  const { userId } = req.params;
+  const user = users[userId];
+  res.render('user', {title: 'User', user})
 });
 
 app.listen(3000);
