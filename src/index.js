@@ -121,8 +121,23 @@ app.get('/schedules/new', (req, res) => {
 
 app.post('/schedules/new', (req, res) => {
   const u = req.body;
-  schedules.push(u);
-  res.render('schedules', {title: 'Schedules', schedules: schedules})
+  //schedules.push(u);
+  pool.query('Insert into schedule(id_user, day, start_at, end_at) values($1, $2, $3, $4)', Object.values(u), (err, result)=>{
+    if(!err){
+      pool.query('Select * from schedule', (err, result)=>{
+        if(!err){
+          res.render('schedules', {title: 'Schedules', schedules: result.rows})
+        }
+        else{
+            console.log(err.message)
+        }
+    })
+    }
+    else{
+        console.log(err.message)
+    }
+})
+  //res.render('schedules', {title: 'Schedules', schedules: schedules})
 });
 
 app.get('/users/new', (req, res) => {
@@ -132,8 +147,21 @@ app.get('/users/new', (req, res) => {
 app.post('/users/new', urlencodedParser, (req, res) => {
   const u = req.body;
   u.password = crypto.createHash('sha256').update(u.password).digest('hex');
-  users.push(u);
-  res.render('users', {title: 'Users', users: users})
+  pool.query('Insert into users(firstname, lastname, email, password) values($1, $2, $3, $4) returning *', Object.values(u), (err, result)=>{
+    if(!err){
+      pool.query('Select * from users', (err, result)=>{
+        if(!err){
+          res.render('users', {title: 'Users', users: result.rows})
+        }
+        else{
+            console.log(err.message)
+        }
+    })
+    }
+    else{
+        console.log(err.message)
+    }
+})
 });
 
 app.get('/users/:userId', (req, res) => {
