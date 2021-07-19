@@ -23,33 +23,96 @@ app.use ((req, res, next) => {
     next();
 });
 
+// const {Client} = require('pg')
+
+// const client = new Client({
+//     host: "localhost",
+//     user: "postgres",
+//     port: 5432,
+//     password: "Galimatias3!",
+//     database: "mrcoffee"
+// })
+
+// client.connect();
+const { Pool } = require('pg');
+const config = require('../nodejs-postgresql/routes/config');
+const pool = new Pool(config.db);
+/**
+ * Query the database using the pool
+ * @param {*} query 
+ * @param {*} params 
+ * 
+ * @see https://node-postgres.com/features/pooling#single-query
+ */
+// async function query(query, params) {
+//     const {rows, fields} = await pool.query(query, params);
+//     return rows;
+// }
+// module.exports = {
+//   query
+// }
+
 app.get('/', (req, res) => {
   res.render('index', { title: 'Hey', message: 'Hello there!' })
 });
 
 app.get('/users', (req, res) => {
-  res.render('users', {title: 'Users', users: users})
+  pool.query('Select * from users', (err, result)=>{
+    if(!err){
+      res.render('users', {title: 'Users', users: result.rows})
+    }
+    else{
+        console.log(err.message)
+    }
+})
 });
 
 app.get('/users/:userId/schedules', (req, res) => {
   const { userId } = req.params;
   const userSchedules = [];
-  for (const i of schedules) {
-    if (userId == i.user_id) {
-      userSchedules.push(i);
+  pool.query('Select * from schedule', (err, result)=>{
+    if(!err){
+      const userSchedules = [];
+      for (const i of result.rows) {
+        if (userId == i.id_user) {
+          userSchedules.push(i);
+        }
+      }
+      if(userSchedules.length!=0){
+        res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
+      }
+      else{
+        res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
+      }
+        //res.render('schedules', {title: 'Schedules', schedules: result.rows})
     }
-  }
-  if(userSchedules.length!=0){
-    console.log(userSchedules.length)
-    res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
-  }
-  else{
-    res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
-  }
+    else{
+        console.log(err.message)
+    }
+})
+  // for (const i of schedules) {
+  //   if (userId == i.user_id) {
+  //     userSchedules.push(i);
+  //   }
+  // }
+  // if(userSchedules.length!=0){
+  //   console.log(userSchedules.length)
+  //   res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
+  // }
+  // else{
+  //   res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
+  // }
 });
 
 app.get('/schedules', (req, res) => {
-  res.render('schedules', {title: 'Schedules', schedules: schedules})
+  pool.query('Select * from schedule', (err, result)=>{
+    if(!err){
+        res.render('schedules', {title: 'Schedules', schedules: result.rows})
+    }
+    else{
+        console.log(err.message)
+    }
+})
 });
 
 app.get('/schedules/new', (req, res) => {
@@ -75,8 +138,14 @@ app.post('/users/new', urlencodedParser, (req, res) => {
 
 app.get('/users/:userId', (req, res) => {
   const { userId } = req.params;
-  const user = users[userId];
-  res.render('user', {title: 'User', user})
+  pool.query('Select * from users where user_id='+userId, (err, result)=>{
+    if(!err){
+      res.render('user', {title: 'User', user: result.rows[0]})
+    }
+    else{
+        console.log(err.message)
+    }
+})
 });
 
 app.listen(3000);
