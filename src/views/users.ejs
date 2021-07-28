@@ -3,8 +3,8 @@
 <ul>
     <% for(let i=0;i<users.length;i++){ %>
       <li>
-          <a href="/users/<%=users[i].user_id%>">
-              <%=users[i].firstname%> <%=users[i].lastname%>
+          <a href="/users/<%=users[i].id %>">
+            <%=users[i].firstname%> <%=users[i].lastname%>
           </a>
       </li>
     <% } %>

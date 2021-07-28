@@ -32,7 +32,21 @@ a{
 	text-align: center;
 	font-size: 14px;
 	border-radius: 5px;
-	margin: 20px 20px 50px 10px;
+	margin: 20px auto 50px auto;
 	padding:10px 30px 10px 40px;
 	box-shadow: 1px 1px 5px #6a7b8b;
+}
+
+form{
+    width: 30%;
+    margin-left: 35%;
+}
+
+input{
+    width: 100%;
+    margin: 10px auto 20px auto;
+    height: 35px;
+	background-color: #c4cad1;
+	border: 0;
+	color: #ffffff;
 }

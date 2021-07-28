@@ -2,11 +2,12 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts')
 const crypto = require('crypto');
 const path = require('path')
-const { users, schedules } = require('./data');
-const app = express();
+const { users, schedules, getHashedPassword, generateAuthToken } = require('./data');
 let bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser');
 let urlencodedParser = bodyParser.urlencoded({ extended: false })
 
+const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts)
 app.set('view engine', 'ejs');
@@ -23,157 +24,197 @@ app.use ((req, res, next) => {
     next();
 });
 
-// const {Client} = require('pg')
+//Authtokens
+const authTokens = {};
 
-// const client = new Client({
-//     host: "localhost",
-//     user: "postgres",
-//     port: 5432,
-//     password: "Galimatias3!",
-//     database: "mrcoffee"
-// })
+//Sequelize
+const Sequelize = require('sequelize')
+const sequelize = new Sequelize('mrcoffee', 'postgres', 'Galimatias3!', {
+  host: 'localhost',
+  dialect: 'postgres',
+});
 
-// client.connect();
-const { Pool } = require('pg');
-const config = require('../nodejs-postgresql/routes/config');
-const pool = new Pool(config.db);
-/**
- * Query the database using the pool
- * @param {*} query 
- * @param {*} params 
- * 
- * @see https://node-postgres.com/features/pooling#single-query
- */
-// async function query(query, params) {
-//     const {rows, fields} = await pool.query(query, params);
-//     return rows;
-// }
-// module.exports = {
-//   query
-// }
+sequelize
+.authenticate()
+.then(() => {
+console.log('Connection has been established successfully.');
+})
+.catch(err => {
+console.error('Unable to connect to the database:', err);
+});
+
+const User = sequelize.define('user', {
+  // attributes
+  firstname: {
+  type: Sequelize.STRING,
+  allowNull: false
+  },
+  lastname: {
+  type: Sequelize.STRING,
+  allowNull: false
+  },
+  email: {
+  type: Sequelize.STRING,
+  allowNull: false
+  },
+  password: {
+  type: Sequelize.STRING,
+  allowNull: false
+  }
+  }, {
+  // options
+  });
+  // Note: using `force: true` will drop the table if it already exists
+  User.sync({ force: false}) // Now the `users` table in the database corresponds to the model definition
+
+  const Schedule = sequelize.define('schedule', {
+    // attributes
+    user_id: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+    },
+    day: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+    },
+    start_at: {
+    type: Sequelize.TIME,
+    allowNull: false
+    },
+    end_at: {
+    type: Sequelize.TIME,
+    allowNull: false
+    }
+    }, {
+    // options
+    });
+    // Note: using `force: true` will drop the table if it already exists
+    Schedule.belongsTo(User, {foreignKey: "user_id"});
+    //Schedule.belongsTo(User)
+    Schedule.sync({ force: true})
+    
 
 app.get('/', (req, res) => {
   res.render('index', { title: 'Hey', message: 'Hello there!' })
 });
 
-app.get('/users', (req, res) => {
-  pool.query('Select * from users', (err, result)=>{
-    if(!err){
-      res.render('users', {title: 'Users', users: result.rows})
-    }
-    else{
-        console.log(err.message)
-    }
-})
+app.get('/login', (req, res) => {
+  res.render('login', { title: 'Login'})
 });
 
-app.get('/users/:userId/schedules', (req, res) => {
-  const { userId } = req.params;
-  const userSchedules = [];
-  pool.query('Select * from schedule', (err, result)=>{
-    if(!err){
-      const userSchedules = [];
-      for (const i of result.rows) {
-        if (userId == i.id_user) {
-          userSchedules.push(i);
-        }
-      }
-      if(userSchedules.length!=0){
-        res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const hashedPassword = getHashedPassword(password)
+
+  try{
+    const user = await User.findAll({
+      where: { email: email, password: hashedPassword }
+      })
+      if(user[0] ){
+        const authToken = generateAuthToken();
+        authTokens[authToken] = user;
+        res.cookie('AuthToken', authToken);
+        res.json(authToken)
       }
       else{
-        res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
+        res.json("Nie ma go tuu")
       }
-        //res.render('schedules', {title: 'Schedules', schedules: result.rows})
-    }
-    else{
-        console.log(err.message)
-    }
-})
-  // for (const i of schedules) {
-  //   if (userId == i.user_id) {
-  //     userSchedules.push(i);
-  //   }
-  // }
-  // if(userSchedules.length!=0){
-  //   console.log(userSchedules.length)
-  //   res.render('userSchedules', {title: 'User Schedules', userSchedules: userSchedules})
-  // }
-  // else{
-  //   res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
-  // }
+  }catch(error){
+    console.error(error)
+  }
 });
 
-app.get('/schedules', (req, res) => {
-  pool.query('Select * from schedule', (err, result)=>{
-    if(!err){
-        res.render('schedules', {title: 'Schedules', schedules: result.rows})
-    }
-    else{
-        console.log(err.message)
-    }
-})
+app.get('/signup', (req, res) => {
+  res.render('signUp', { title: 'Sign up'})
+});
+
+app.post('/signup', (req, res) => {
+  const { email, firstname, lastname, password, confirmPassword } = req.body;
+  if(password===confirmPassword){
+    console.log("Tu jest niezrobione")
+  }
+  res.render('signUp', { title: 'Sign up'})
+});
+
+app.get('/users', async (req, res) => {
+  try{
+    const u = await User.findAll()
+    res.render('users', {title: 'Users', users: u})
+  }catch(error){
+    console.error(error)
+  }
+});
+
+app.get('/users/:userId/schedules', async (req, res) => {
+  const { userId } = req.params;
+  try{
+    const s = await Schedule.findAll({
+      where: { id: userId }
+      })
+      if(s.length===0){
+        res.render('errorPage', {title: 'User Schedules', message: 'This user has no schedules'})
+      }
+      else{
+        res.render('userSchedules', {title: 'User Schedules', userSchedules: s})
+      }
+  }catch(error){
+    console.error(error)
+  }
+});
+
+app.get('/schedules', async (req, res) => {
+  try {
+  const schedules = await Schedule.findAll()
+  res.render('schedules', {title: 'Schedules', schedules: schedules})
+  } catch(error) {
+  console.error(error)
+  }
 });
 
 app.get('/schedules/new', (req, res) => {
   res.render('newSchedule', {title: 'Add new schedule'})
 });
 
-app.post('/schedules/new', (req, res) => {
+app.post('/schedules/new', async (req, res) => {
+  try {
+    const s = req.body
+    const newSchedule = new Schedule(s)
+    await newSchedule.save()
+    res.redirect('/schedules') // Returns the new user that is created in the database
+    } catch(error) {
+    console.error(error)
+    }
+
+  //
   const u = req.body;
-  //schedules.push(u);
-  pool.query('Insert into schedule(id_user, day, start_at, end_at) values($1, $2, $3, $4)', Object.values(u), (err, result)=>{
-    if(!err){
-      pool.query('Select * from schedule', (err, result)=>{
-        if(!err){
-          res.render('schedules', {title: 'Schedules', schedules: result.rows})
-        }
-        else{
-            console.log(err.message)
-        }
-    })
-    }
-    else{
-        console.log(err.message)
-    }
-})
-  //res.render('schedules', {title: 'Schedules', schedules: schedules})
 });
 
 app.get('/users/new', (req, res) => {
   res.render('newUser', {title: 'Add new user', users: users})
 });
 
-app.post('/users/new', urlencodedParser, (req, res) => {
-  const u = req.body;
-  u.password = crypto.createHash('sha256').update(u.password).digest('hex');
-  pool.query('Insert into users(firstname, lastname, email, password) values($1, $2, $3, $4) returning *', Object.values(u), (err, result)=>{
-    if(!err){
-      pool.query('Select * from users', (err, result)=>{
-        if(!err){
-          res.render('users', {title: 'Users', users: result.rows})
-        }
-        else{
-            console.log(err.message)
-        }
-    })
+app.post('/users/new', urlencodedParser, async (req, res) => {
+  try {
+    const u = req.body
+    u.password = getHashedPassword(u.password)
+    const newUser = new User(u)
+    await newUser.save()
+    res.redirect('/users') // Returns the new user that is created in the database
+    } catch(error) {
+    console.error(error)
     }
-    else{
-        console.log(err.message)
-    }
-})
 });
 
-app.get('/users/:userId', (req, res) => {
-  const { userId } = req.params;
-  pool.query('Select * from users where user_id='+userId, (err, result)=>{
-    if(!err){
-      res.render('user', {title: 'User', user: result.rows[0]})
-    }
-    else{
-        console.log(err.message)
-    }
-})
+app.get('/users/:userId', async (req, res) => {
+  const {userId} = req.params
+  try {
+  const u = await User.findAll({
+  where: { id: userId }
+  })
+  res.render('user', {title: 'User', user: u[0]})
+  } catch(error) {
+  console.error(error)
+  }
 });
 
 app.listen(3000);
