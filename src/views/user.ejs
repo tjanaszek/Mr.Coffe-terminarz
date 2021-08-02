@@ -2,6 +2,19 @@
 <p>Lastname: <%=user.lastname%></p>
 <p>E-mail: <%=user.email%></p>
 <p>Password: <%=user.password%></p>
-<a href="<%= url %>/schedules" class="button">Show me schedules</a>
-<a href="/users" class="button">Go back</a>
+<!-- <a href="<%= url %>/schedules" class="button">Show me schedules</a> -->
+<p>Schedules: </p>
+<table>
+    <tr>
+      <td>Day</td><td>Start at</td><td>End at</td>
+    </tr>
+    <% for(let i=0;i<userSchedules.length;i++){ %>
+      <tr>
+        <td> <%=userSchedules[i].day%> </td>
+        <td><%=userSchedules[i].start_at%></td>
+        <td><%=userSchedules[i].end_at%></td>
+      </tr>
+    <% } %>
+  </table>
+  <a href="javascript:history.back()" class="button">Go back</a>
 

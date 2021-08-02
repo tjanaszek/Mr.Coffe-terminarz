@@ -1,11 +1,19 @@
 <form method="POST" action="/schedules/new">
-    <p class="inputLabel" id="userIDLabel">User ID *</p>
-    <input type="number" id="userIDInput" name="user_id" required>
     <p class="inputLabel" id="dayLabel">Day of week *</p>
-    <input type="number" id="dayInput" name="day" required>
+    <select id="daySelect" name="day" required>
+        <option value="1">Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday"</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+        <option value="6">Sunday</option>
+      </select> 
     <p class="inputLabel" id="startAtLabel">Start at *</p>
     <input type="time" id="startAtInput" name="start_at" required>
     <p class="inputLabel" id="endAtLabel">End at *</p>
     <input type="time" id="endAtInput" name="end_at" required><br>
     <input type="submit" value="Submit" class="button">
 </form>
+
+<a href="javascript:history.back()" class="button">Go back</a>

@@ -1,13 +1,24 @@
-<form method="POST" action="/signup">
-    <label for="firstname" class="inputLabel">First name</label>
-    <input type="text" id="firstname" name="firstname" required>
-    <label for="lastname" class="inputLabel">Last name</label>
-    <input type="text" id="lastname" name="lastname" required>
-    <label for="email" class="inputLabel">E-mail</label>
-    <input type="email" id="email" name="email" required>
-    <label for="password" class="inputLabel">Password</label>
-    <input type="password" id="password" name="password" required>
-    <label for="confirmPassword" class="inputLabel">Repeat password</label>
-    <input type="password" id="confirmPassword" name="confirmPassword" required>
-    <input type="submit" value="Login" class="button">
-</form>
+<div class="wrapper">
+
+    <% if(message){ %>
+        <div class="alert">>
+            <%=message %>
+        </div>
+    <% } %>
+
+    <form method="POST" action="/signup">
+        <label for="firstname" class="inputLabel">First name</label>
+        <input type="text" id="firstname" name="firstname" required>
+        <label for="lastname" class="inputLabel">Last name</label>
+        <input type="text" id="lastname" name="lastname" required>
+        <label for="email" class="inputLabel">E-mail</label>
+        <input type="email" id="email" name="email" required>
+        <label for="password" class="inputLabel">Password</label>
+        <input type="password" id="password" name="password" required>
+        <label for="confirmPassword" class="inputLabel">Repeat password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+        <input type="submit" value="Login" class="button">
+    </form>
+
+    <a href="javascript:history.back()" class="button">Go back</a>
+</div>

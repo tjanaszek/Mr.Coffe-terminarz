@@ -1,10 +1,15 @@
-<ul>
+  <table>
+    <tr>
+      <td>User ID</td><td>Day</td><td>Start at</td><td>End at</td><td>User details</td>
+    </tr>
     <% for(let i=0;i<schedules.length;i++){ %>
-      <li>
-          <!-- <a href="http://localhost:5000/articles/<%=i%>"> -->
-              user ID: <%=schedules[i].user_id%>, day: <%=schedules[i].day%>, start at <%=schedules[i].start_at%>, end at <%=schedules[i].end_at%> 
-          <!-- </a> -->
-      </li>
+      <tr>
+        <td><%=schedules[i].user_id%></td>
+        <td> <%=schedules[i].day%> </td>
+        <td><%=schedules[i].start_at%></td>
+        <td><%=schedules[i].end_at%></td>
+        <td><a href="http://localhost:3000/users/<%=schedules[i].user_id%>" class="tableButton">Show details</a></td>
+      </tr>
     <% } %>
-  </ul>
-  <a href="/schedules/new" class="button">Add new schedule</a>
+  </table>
+ <a href="/userSchedules" class="button">Show my schedules</a>

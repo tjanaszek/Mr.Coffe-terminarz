@@ -1,14 +1,17 @@
-
-<h3>user ID: <%=userSchedules[0].user_id%> </h3>
-<ul>
-    <% for(let i=0;i<userSchedules.length;i++){ %>
-      <li>
-          <!-- <a href="http://localhost:5000/articles/<%=i%>"> -->
-              day: <%=userSchedules[i].day%>, start at <%=userSchedules[i].start_at%>, end at <%=userSchedules[i].end_at%> 
-          <!-- </a> -->
-      </li>
-    <% } %>
-  </ul>
-
-  <a href="/users/<%=userSchedules[0].id_user%>" class="button">Go back</a>
+<h1>Your schedules</h1>
+<table>
+  <tr>
+    <td>Day</td><td>Start at</td><td>End at</td><td>Delete schedule</td>
+  </tr>
+  <% for(let i=0;i<userSchedules.length;i++){ %>
+    <tr>
+      <td> <%=userSchedules[i].day%> </td>
+      <td><%=userSchedules[i].start_at%></td>
+      <td><%=userSchedules[i].end_at%></td>
+      <td><a href="/schedules/delete/<%=userSchedules[i].id %>" class="tableButton">Delete</a></td>
+    </tr>
+  <% } %>
+</table>
+  <a href="/schedules/new" class="button">Add new schedule</a>
+  <a href="javascript:history.back()" class="button">Go back</a>
 
