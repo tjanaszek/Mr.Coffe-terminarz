@@ -139,6 +139,11 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.get('/logout', (req, res) => {
+  res.clearCookie('AuthToken');
+  res.redirect('/login')
+});
+
 app.get('/signup', (req, res) => {
   res.render('signUp', { title: 'Sign up', message: ''})
 });
